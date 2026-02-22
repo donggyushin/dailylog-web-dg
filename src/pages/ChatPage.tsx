@@ -33,6 +33,7 @@ export function ChatPage() {
   const [isDiaryWritten, setIsDiaryWritten] = useState(false);
   const [isSavingDiary, setIsSavingDiary] = useState(false);
   const [hasTodayDiary, setHasTodayDiary] = useState(false);
+  const [isEndingSession, setIsEndingSession] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isComposingRef = useRef(false);
@@ -129,6 +130,25 @@ export function ChatPage() {
       console.error('Error saving diary:', error);
     } finally {
       setIsSavingDiary(false);
+    }
+  };
+
+  // 세션 종료 핸들러
+  const handleEndSession = async () => {
+    setIsEndingSession(true);
+    try {
+      const { error } = await api.chat.endCurrentSession();
+
+      if (!error) {
+        // 홈화면으로 이동
+        navigate('/');
+      } else {
+        console.error('Failed to end session:', error);
+      }
+    } catch (error) {
+      console.error('Error ending session:', error);
+    } finally {
+      setIsEndingSession(false);
     }
   };
 
@@ -235,12 +255,23 @@ export function ChatPage() {
     <div className="min-h-screen bg-accent-cream dark:bg-dark-bg flex flex-col">
       {/* 헤더 */}
       <header className="border-b-2 border-natural-900 dark:border-dark-border bg-white dark:bg-dark-card p-4">
-        <h1 className="font-serif font-bold text-2xl text-natural-900 dark:text-dark-text">
-          Daily Log 대화
-        </h1>
-        <p className="text-sm text-natural-600 dark:text-natural-400 mt-1">
-          오늘 하루를 함께 돌아봐요
-        </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="font-serif font-bold text-2xl text-natural-900 dark:text-dark-text">
+              Daily Log 대화
+            </h1>
+            <p className="text-sm text-natural-600 dark:text-natural-400 mt-1">
+              오늘 하루를 함께 돌아봐요
+            </p>
+          </div>
+          <Button
+            onClick={handleEndSession}
+            disabled={isEndingSession}
+            variant="outline"
+          >
+            {isEndingSession ? '종료 중...' : '대화 종료'}
+          </Button>
+        </div>
       </header>
 
       {/* 메시지 영역 */}

@@ -181,6 +181,13 @@ export const api = {
                 }),
             });
         },
+
+        // 현재 채팅 세션 종료
+        endCurrentSession: async () => {
+            return request('/api/v1/chat-current-session', {
+                method: 'DELETE',
+            });
+        },
     },
 
     // 일기 작성 API
