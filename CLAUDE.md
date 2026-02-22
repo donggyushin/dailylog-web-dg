@@ -90,6 +90,7 @@ src/
 │   ├── SignupPage.tsx        # Signup page
 │   ├── HomePage.tsx          # Main dashboard (authenticated)
 │   ├── ChatPage.tsx          # AI chat conversation page
+│   ├── DiaryDetailPage.tsx   # Diary detail and thumbnail management
 │   ├── AuthPages.css         # Login/Signup styles
 │   └── HomePage.css          # Home page styles
 ├── utils/            # Utility functions
@@ -150,6 +151,49 @@ The API layer is organized into namespaces:
 - `api.chat.getCurrentSession()` - Get current chat session
 - `api.chat.sendMessage()` - Send chat message (requires session_id, user_id, content)
 - `api.diary.create()` - Create diary from chat message (requires session_id, message_id)
+- `api.diary.list()` - Get diary list with optional cursor pagination
+- `api.diary.getById()` - Get single diary by ID
+- `api.diary.getThumbnail()` - Generate AI thumbnail for diary (can be called up to 3 times)
+- `api.diary.updateThumbnail()` - Apply selected thumbnail to diary
+- `api.diary.delete()` - Delete diary entry
+
+### Thumbnail Generation Workflow
+
+Diaries can have AI-generated thumbnails added after creation:
+
+1. **Thumbnail Generation** (`/diary/:id` detail page):
+   - Users can generate up to 3 thumbnail options per diary
+   - Each call to `api.diary.getThumbnail(diaryId)` generates a new image
+   - Generated thumbnails are stored in local state (not persisted until applied)
+
+2. **Thumbnail Selection**:
+   - Users can preview all generated thumbnails in a grid
+   - Selecting a thumbnail shows it in a larger preview
+
+3. **Thumbnail Application**:
+   - Once satisfied, user clicks to apply the selected thumbnail
+   - Calls `api.diary.updateThumbnail(diaryId, imgUrl)` to persist it
+   - The diary's `thumbnail_url` field is updated
+
+### Home Page Display Patterns
+
+The home page (`HomePage.tsx`) displays diaries in a grid with different card styles:
+
+- **Diaries with thumbnails**:
+  - Full-width image background with gradient overlay
+  - Date only (no title or content preview)
+  - Image brightness detection determines text color for readability
+  - Hover effect scales the image slightly (`group-hover:scale-105`)
+
+- **Diaries without thumbnails**:
+  - White card with border
+  - Shows date, title, and content preview
+  - "더 읽기 →" footer with separator line
+
+- **Create diary card**:
+  - Only shown if no diary exists for today's date
+  - Black background with "+" icon
+  - Navigates to `/chat` to start conversation
 
 ## TypeScript Configuration
 
@@ -266,6 +310,27 @@ When working with the ChatPage component:
 - **Focus management**: Input stays focused during AI response (only send button disables)
 - **Diary detection**: Chat automatically detects `[TITLE_START]...[TITLE_END]` and `[CONTENT_START]...[CONTENT_END]` tags
 - **Session termination**: Once diary is generated, input is disabled to prevent further messages
+
+### Diary Detail Page Layout
+
+The diary detail page (`DiaryDetailPage.tsx`) uses a responsive layout:
+
+- **Desktop (lg+)**: Two-column layout
+  - Left column: Diary content (flexible width)
+  - Right column: Thumbnail generation section (fixed 384px width, only visible if no thumbnail exists)
+  - Separated by left border on thumbnail section
+
+- **Mobile**: Single column stack
+  - Diary content on top
+  - Thumbnail section below (if visible)
+  - Separated by top border on thumbnail section
+
+- **Thumbnail UI**:
+  - "썸네일 추가하기" button generates new thumbnails (max 3)
+  - Counter shows "X / 3개 생성됨"
+  - Two panels: selected preview (top) and thumbnail grid (bottom)
+  - Grid shows all generated options with selection highlighting
+  - Apply button persists the selected thumbnail to the diary
 
 ## Development Notes
 
