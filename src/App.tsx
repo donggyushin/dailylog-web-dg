@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
+import { EmailVerificationPage } from './pages/EmailVerificationPage';
 import { HomePage } from './pages/HomePage';
 import { ChatPage } from './pages/ChatPage';
 import { DiaryDetailPage } from './pages/DiaryDetailPage';
@@ -25,6 +26,14 @@ function App() {
             <GuestRoute>
               <SignupPage />
             </GuestRoute>
+          }
+        />
+        <Route
+          path="/verify-email"
+          element={
+            <ProtectedRoute>
+              <EmailVerificationPage />
+            </ProtectedRoute>
           }
         />
         <Route

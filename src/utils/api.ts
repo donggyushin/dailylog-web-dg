@@ -154,6 +154,21 @@ export const api = {
         });
     },
 
+    // 이메일 인증번호 요청
+    requestEmailVerification: async () => {
+        return request('/api/v1/email_verification_code', {
+            method: 'POST',
+        });
+    },
+
+    // 이메일 인증
+    verifyEmail: async (code: string) => {
+        return request('/api/v1/verify_email', {
+            method: 'POST',
+            body: JSON.stringify({ code }),
+        });
+    },
+
     // 현재 유저 정보 가져오기
     me: async () => {
         return request('/api/v1/me');
