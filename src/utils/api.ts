@@ -336,7 +336,7 @@ export const api = {
 
         // 이전/다음 일기 조회
         getNextPrev: async (diaryId: string) => {
-            return request<{ next: Diary | null; prev: Diary | null }>(`/api/v1/diary/next_prev/${diaryId}`);
+            return request<{ next: Diary | null; prev: Diary | null }>(`/api/v1/diary/${diaryId}/next_prev`);
         },
     },
 };
