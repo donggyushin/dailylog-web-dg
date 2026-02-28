@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../utils/api';
 import { Button } from '../components/ui/Button';
@@ -257,9 +257,11 @@ export function ChatPage() {
       <header className="border-b-2 border-natural-900 dark:border-dark-border bg-white dark:bg-dark-card p-4">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="font-serif font-bold text-2xl text-natural-900 dark:text-dark-text">
-              Daily Log 대화
-            </h1>
+            <Link to="/">
+              <h1 className="font-serif font-bold text-2xl text-natural-900 dark:text-dark-text hover:opacity-70 transition-opacity cursor-pointer">
+                Daily Log
+              </h1>
+            </Link>
             <p className="text-sm text-natural-600 dark:text-natural-400 mt-1">
               오늘 하루를 함께 돌아봐요
             </p>

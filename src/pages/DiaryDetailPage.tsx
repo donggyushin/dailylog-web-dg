@@ -133,6 +133,13 @@ export function DiaryDetailPage() {
                     </button>
                     <div className="flex gap-4">
                         <Button
+                            onClick={() => navigate(`/chat/history/${id}`)}
+                            variant="outline"
+                            size="sm"
+                        >
+                            대화 보기
+                        </Button>
+                        <Button
                             onClick={handleDelete}
                             disabled={isDeleting}
                             variant="outline"
