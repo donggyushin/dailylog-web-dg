@@ -247,6 +247,33 @@ export const api = {
         },
     },
 
+    // 비밀번호 찾기 API
+    forgotPassword: {
+        // 이메일 인증번호 요청
+        requestCode: async (email: string) => {
+            return request('/api/v1/change_password/email_verification_code', {
+                method: 'POST',
+                body: JSON.stringify({ email }),
+            });
+        },
+
+        // 이메일 인증코드 검증 (토큰 반환)
+        verifyCode: async (email: string, code: string) => {
+            return request<{ token: string }>('/api/v1/change_password/verify', {
+                method: 'POST',
+                body: JSON.stringify({ email, code }),
+            });
+        },
+
+        // 비밀번호 변경
+        changePassword: async (token: string, newPassword: string) => {
+            return request('/api/v1/change_password', {
+                method: 'PATCH',
+                body: JSON.stringify({ token, new_password: newPassword }),
+            });
+        },
+    },
+
     // 일기 작성 API
     diary: {
         // 일기 작성

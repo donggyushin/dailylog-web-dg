@@ -87,7 +87,7 @@ export function LoginPage() {
                     </form>
 
                     {/* 푸터 */}
-                    <div className="mt-10 pt-8 border-t-2 border-natural-200 dark:border-dark-border/30 text-center">
+                    <div className="mt-10 pt-8 border-t-2 border-natural-200 dark:border-dark-border/30 text-center space-y-3">
                         <p className="text-natural-600 dark:text-dark-text/80 text-sm">
                             계정이 없으신가요?{' '}
                             <Link
@@ -95,6 +95,15 @@ export function LoginPage() {
                                 className="text-natural-900 dark:text-dark-text font-bold underline hover:no-underline"
                             >
                                 회원가입
+                            </Link>
+                        </p>
+                        <p className="text-natural-600 dark:text-dark-text/80 text-sm">
+                            비밀번호를 잊으셨나요?{' '}
+                            <Link
+                                to="/forgot-password"
+                                className="text-natural-900 dark:text-dark-text font-bold underline hover:no-underline"
+                            >
+                                비밀번호 찾기
                             </Link>
                         </p>
                     </div>
