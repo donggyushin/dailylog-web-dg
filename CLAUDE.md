@@ -86,13 +86,15 @@ src/
 │   ├── AuthContext.tsx       # Authentication state management
 │   └── ThemeContext.tsx      # Theme state management (light/dark)
 ├── pages/            # Page components
-│   ├── LoginPage.tsx         # Login page
-│   ├── SignupPage.tsx        # Signup page
-│   ├── HomePage.tsx          # Main dashboard (authenticated)
-│   ├── ChatPage.tsx          # AI chat conversation page
-│   ├── DiaryDetailPage.tsx   # Diary detail and thumbnail management
-│   ├── AuthPages.css         # Login/Signup styles
-│   └── HomePage.css          # Home page styles
+│   ├── LoginPage.tsx              # Login page
+│   ├── SignupPage.tsx             # Signup page
+│   ├── EmailVerificationPage.tsx  # Email verification with 5-minute timer
+│   ├── HomePage.tsx               # Main dashboard (authenticated)
+│   ├── ChatPage.tsx               # AI chat conversation page
+│   ├── ChatHistoryPage.tsx        # Read-only chat history viewer
+│   ├── DiaryDetailPage.tsx        # Diary detail and thumbnail management
+│   ├── AuthPages.css              # Login/Signup styles
+│   └── HomePage.css               # Home page styles
 ├── utils/            # Utility functions
 │   └── api.ts               # API communication layer with token refresh
 ├── main.tsx          # Application entry point with providers
@@ -113,6 +115,18 @@ src/
 - **Guest routes**: Authenticated users accessing `/login` or `/signup` are redirected to `/`
 - **AuthContext**: Global authentication state accessible via `useAuth()` hook
 - **API integration**: All API calls automatically include authentication headers
+
+### Email Verification Flow
+
+After signup, users must verify their email:
+
+1. **Automatic redirect**: After signup, users are redirected to `/verify-email`
+2. **Code delivery**: Verification code is automatically requested via `POST /api/v1/email_verification_code`
+3. **5-minute timer**: Countdown timer shows remaining time to enter the code
+4. **Code verification**: Submit code via `POST /api/v1/verify_email` with `{ code: string }`
+5. **Resend functionality**: Users can request a new code, which resets the timer
+6. **Auto-navigation**: Upon successful verification, user is redirected to home page
+7. **User model**: `User.email_verified` boolean tracks verification status
 
 ### Diary Creation Workflow
 
@@ -148,11 +162,16 @@ The app follows a 3-step process for creating diary entries:
 The API layer is organized into namespaces:
 
 - `api.login()`, `api.signup()`, `api.me()` - Authentication endpoints
+- `api.requestEmailVerification()` - Request email verification code
+- `api.verifyEmail(code)` - Verify email with 6-digit code
 - `api.chat.getCurrentSession()` - Get current chat session
 - `api.chat.sendMessage()` - Send chat message (requires session_id, user_id, content)
+- `api.chat.endCurrentSession()` - End current chat session
 - `api.diary.create()` - Create diary from chat message (requires session_id, message_id)
 - `api.diary.list()` - Get diary list with optional cursor pagination
 - `api.diary.getById()` - Get single diary by ID
+- `api.diary.getByDate(date)` - Get diary by specific date (YYYY-MM-DD)
+- `api.diary.getChatSession(diaryId)` - Get chat session associated with a diary
 - `api.diary.getThumbnail()` - Generate AI thumbnail for diary (can be called up to 3 times)
 - `api.diary.updateThumbnail()` - Apply selected thumbnail to diary
 - `api.diary.delete()` - Delete diary entry
@@ -332,6 +351,34 @@ The diary detail page (`DiaryDetailPage.tsx`) uses a responsive layout:
   - Grid shows all generated options with selection highlighting
   - Apply button persists the selected thumbnail to the diary
 
+- **Navigation**:
+  - "대화 보기" button navigates to `/chat/history/:id` to view the original conversation
+  - "삭제" button deletes the diary with confirmation
+  - "← 목록으로" returns to home page
+
+### Chat History Page
+
+Read-only page for viewing past conversations (`ChatHistoryPage.tsx`):
+
+- **Route**: `/chat/history/:id` where `:id` is the diary ID
+- **Data source**: Calls `api.diary.getChatSession(diaryId)` to fetch session data
+- **Display**: Identical to ChatPage but without input controls
+- **Features**:
+  - Shows all messages except SYSTEM role messages
+  - Renders diary entries in journal-style format (without save button)
+  - "Daily Log" header links back to home page
+- **Error handling**: Redirects to home if session fails to load
+
+## Application Routes
+
+- `/login` - Guest only (redirects to `/` if authenticated)
+- `/signup` - Guest only (redirects to `/` if authenticated)
+- `/verify-email` - Protected route for email verification
+- `/` - Home page (protected, shows diary list)
+- `/chat` - Active chat conversation (protected, one diary per day limit)
+- `/chat/history/:id` - Read-only chat history viewer (protected)
+- `/diary/:id` - Diary detail page with thumbnail management (protected)
+
 ## Development Notes
 
 - The project uses React 19 with StrictMode enabled
@@ -339,3 +386,4 @@ The diary detail page (`DiaryDetailPage.tsx`) uses a responsive layout:
 - Module resolution is set to "bundler" mode for optimal Vite compatibility
 - JSX transformation uses the modern `react-jsx` runtime (no React import needed)
 - Backend API is implemented separately and should be running for full functionality
+- **One diary per day**: ChatPage checks for existing diary with `api.diary.getByDate(today)` before allowing new conversations

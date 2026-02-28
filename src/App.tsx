@@ -4,6 +4,7 @@ import { SignupPage } from './pages/SignupPage';
 import { EmailVerificationPage } from './pages/EmailVerificationPage';
 import { HomePage } from './pages/HomePage';
 import { ChatPage } from './pages/ChatPage';
+import { ChatHistoryPage } from './pages/ChatHistoryPage';
 import { DiaryDetailPage } from './pages/DiaryDetailPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { GuestRoute } from './components/GuestRoute';
@@ -49,6 +50,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ChatPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat/history/:id"
+          element={
+            <ProtectedRoute>
+              <ChatHistoryPage />
             </ProtectedRoute>
           }
         />
