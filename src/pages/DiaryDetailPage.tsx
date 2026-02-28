@@ -16,6 +16,8 @@ export function DiaryDetailPage() {
     const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false);
     const [isUpdatingThumbnail, setIsUpdatingThumbnail] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [nextDiary, setNextDiary] = useState<Diary | null>(null);
+    const [prevDiary, setPrevDiary] = useState<Diary | null>(null);
 
     useEffect(() => {
         const loadDiary = async () => {
@@ -32,6 +34,13 @@ export function DiaryDetailPage() {
                 setError(error);
             } else if (data) {
                 setDiary(data);
+            }
+
+            // 이전/다음 일기 로드
+            const { data: navData } = await api.diary.getNextPrev(id);
+            if (navData) {
+                setNextDiary(navData.next);
+                setPrevDiary(navData.prev);
             }
 
             setIsLoading(false);
@@ -160,7 +169,42 @@ export function DiaryDetailPage() {
             </header>
 
             {/* 메인 콘텐츠 */}
-            <main className="max-w-7xl mx-auto px-6 py-12">
+            <main className="max-w-7xl mx-auto px-6 py-12 relative">
+                {/* 네비게이션 버튼 */}
+                {nextDiary && (
+                    <button
+                        onClick={() => navigate(`/diary/${nextDiary.id}`)}
+                        className="fixed left-4 top-1/2 -translate-y-1/2 bg-white dark:bg-dark-card border-2 border-natural-900 dark:border-dark-border p-4 hover:bg-natural-100 dark:hover:bg-natural-800 transition-colors z-10"
+                        aria-label="다음 일기"
+                    >
+                        <svg
+                            className="w-6 h-6 text-natural-900 dark:text-dark-text"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="square" strokeLinejoin="miter" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                )}
+
+                {prevDiary && (
+                    <button
+                        onClick={() => navigate(`/diary/${prevDiary.id}`)}
+                        className="fixed right-4 top-1/2 -translate-y-1/2 bg-white dark:bg-dark-card border-2 border-natural-900 dark:border-dark-border p-4 hover:bg-natural-100 dark:hover:bg-natural-800 transition-colors z-10"
+                        aria-label="이전 일기"
+                    >
+                        <svg
+                            className="w-6 h-6 text-natural-900 dark:text-dark-text"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="square" strokeLinejoin="miter" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                )}
+
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* 좌측: 일기 내용 */}
                     <div className="flex-1">

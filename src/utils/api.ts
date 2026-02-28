@@ -333,5 +333,10 @@ export const api = {
         getChatSession: async (diaryId: string) => {
             return request(`/api/v1/diary/chat_session/${diaryId}`);
         },
+
+        // 이전/다음 일기 조회
+        getNextPrev: async (diaryId: string) => {
+            return request<{ next: Diary | null; prev: Diary | null }>(`/api/v1/diary/next_prev/${diaryId}`);
+        },
     },
 };
