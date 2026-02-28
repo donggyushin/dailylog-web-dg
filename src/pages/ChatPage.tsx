@@ -34,9 +34,11 @@ export function ChatPage() {
   const [isSavingDiary, setIsSavingDiary] = useState(false);
   const [hasTodayDiary, setHasTodayDiary] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
+  const [isMessageLimitReached, setIsMessageLimitReached] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isComposingRef = useRef(false);
+  const hasAutoRequestedDiaryRef = useRef(false);
 
   // 일기 형식 파싱
   const parseDiaryEntry = (content: string) => {
@@ -112,6 +114,50 @@ export function ChatPage() {
     }
   }, [messages, isSending]);
 
+  // 메시지 개수가 50개를 넘으면 자동으로 일기 작성 요청
+  useEffect(() => {
+    const autoRequestDiary = async () => {
+      // 이미 요청했거나, 전송 중이거나, 세션이 없거나, 유저가 없으면 무시
+      if (
+        hasAutoRequestedDiaryRef.current ||
+        isSending ||
+        !user ||
+        !session ||
+        isDiaryWritten
+      ) {
+        return;
+      }
+
+      // 메시지가 50개를 넘으면
+      if (messages.length > 50) {
+        setIsMessageLimitReached(true);
+        hasAutoRequestedDiaryRef.current = true;
+        setIsSending(true);
+
+        try {
+          const { data, error } = await api.chat.sendMessage(
+            session.id,
+            user.id,
+            '이제 일기를 작성해줘.'
+          );
+
+          if (data && !error) {
+            const assistantMessage = data as Message;
+            setMessages((prev) => [...prev, assistantMessage]);
+          } else {
+            console.error('Failed to auto-request diary:', error);
+          }
+        } catch (error) {
+          console.error('Error auto-requesting diary:', error);
+        } finally {
+          setIsSending(false);
+        }
+      }
+    };
+
+    autoRequestDiary();
+  }, [messages.length, user, session, isSending, isDiaryWritten]);
+
   // 일기 저장 핸들러
   const handleSaveDiary = async (messageId: string) => {
     if (!session) return;
@@ -178,7 +224,17 @@ export function ChatPage() {
     e.preventDefault();
 
     // 중복 전송 방지: 이미 전송 중이면 무시
-    if (isSending || !inputMessage.trim() || !user || !session) return;
+    // 메시지 개수 제한에 도달했거나 일기가 작성되었으면 무시
+    if (
+      isSending ||
+      !inputMessage.trim() ||
+      !user ||
+      !session ||
+      isMessageLimitReached ||
+      isDiaryWritten
+    ) {
+      return;
+    }
 
     const userMessage: Message = {
       id: 'temp-' + Date.now(),
@@ -278,6 +334,20 @@ export function ChatPage() {
 
       {/* 메시지 영역 */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        {/* 메시지 개수 제한 안내 */}
+        {isMessageLimitReached && !isDiaryWritten && (
+          <div className="border-2 border-natural-900 dark:border-dark-border bg-natural-100 dark:bg-dark-card p-4">
+            <div className="font-bold uppercase tracking-wider text-xs mb-2 text-natural-900 dark:text-dark-text">
+              안내
+            </div>
+            <div className="text-natural-900 dark:text-dark-text">
+              대화가 너무 길어져서 더 이상 대화를 할 수 없습니다.
+              <br />
+              AI가 지금까지의 대화를 바탕으로 일기를 작성하고 있습니다.
+            </div>
+          </div>
+        )}
+
         {messages.map((message) => {
           const diaryData = parseDiaryEntry(message.content);
 
@@ -362,9 +432,14 @@ export function ChatPage() {
             onKeyDown={handleKeyDown}
             onCompositionStart={handleCompositionStart}
             onCompositionEnd={handleCompositionEnd}
-            placeholder="메시지를 입력하세요... (Shift + Enter로 줄바꿈)"
+            placeholder={
+              isMessageLimitReached || isDiaryWritten
+                ? '대화가 종료되었습니다'
+                : '메시지를 입력하세요... (Shift + Enter로 줄바꿈)'
+            }
             rows={1}
-            className="flex-1 px-4 py-3 border-2 border-natural-900 dark:border-dark-border bg-white dark:bg-dark-bg text-natural-900 dark:text-dark-text placeholder-natural-400 focus:outline-none focus:ring-2 focus:ring-natural-900 dark:focus:ring-dark-border resize-none overflow-hidden"
+            disabled={isMessageLimitReached || isDiaryWritten}
+            className="flex-1 px-4 py-3 border-2 border-natural-900 dark:border-dark-border bg-white dark:bg-dark-bg text-natural-900 dark:text-dark-text placeholder-natural-400 focus:outline-none focus:ring-2 focus:ring-natural-900 dark:focus:ring-dark-border resize-none overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               minHeight: '3rem',
               maxHeight: '12rem',
@@ -377,7 +452,7 @@ export function ChatPage() {
           />
           <Button
             type="submit"
-            disabled={isSending || !inputMessage.trim() || isDiaryWritten}
+            disabled={isSending || !inputMessage.trim() || isDiaryWritten || isMessageLimitReached}
           >
             전송
           </Button>
