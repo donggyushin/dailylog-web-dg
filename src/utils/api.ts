@@ -182,6 +182,40 @@ export const api = {
         });
     },
 
+    // 프로필 이미지 업로드
+    uploadProfileImage: async (file: File) => {
+        const token = Cookies.get('accessToken');
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/v1/me/profile-image`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                return { error: data.message || 'Failed to upload image' };
+            }
+
+            return { data };
+        } catch {
+            return { error: 'Network error. Please try again.' };
+        }
+    },
+
+    // 프로필 이미지 삭제
+    deleteProfileImage: async () => {
+        return request('/api/v1/me/profile-image', {
+            method: 'DELETE',
+        });
+    },
+
     // 채팅 세션 관련 API
     chat: {
         // 현재 채팅 세션 가져오기
