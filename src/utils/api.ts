@@ -331,7 +331,7 @@ export const api = {
 
         // 일기의 채팅 세션 조회
         getChatSession: async (diaryId: string) => {
-            return request(`/api/v1/diary/chat_session/${diaryId}`);
+            return request(`/api/v1/diary/${diaryId}/chat_session`);
         },
 
         // 이전/다음 일기 조회
