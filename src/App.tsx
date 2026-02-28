@@ -6,6 +6,7 @@ import { HomePage } from './pages/HomePage';
 import { ChatPage } from './pages/ChatPage';
 import { ChatHistoryPage } from './pages/ChatHistoryPage';
 import { DiaryDetailPage } from './pages/DiaryDetailPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { GuestRoute } from './components/GuestRoute';
 
@@ -66,6 +67,14 @@ function App() {
           element={
             <ProtectedRoute>
               <DiaryDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />

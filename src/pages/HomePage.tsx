@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/Button';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
@@ -151,10 +151,34 @@ export function HomePage() {
                     <h1 className="text-3xl md:text-4xl font-serif font-bold text-natural-900 dark:text-dark-text tracking-tight">
                         Daily Log
                     </h1>
-                    <div className="flex items-center gap-6">
-                        <span className="text-sm text-natural-600 dark:text-dark-text/80">
-                            {user?.username}님
-                        </span>
+                    <div className="flex items-center gap-4">
+                        <Link
+                            to="/profile"
+                            className="flex items-center gap-3 hover:opacity-70 transition-opacity group"
+                        >
+                            {/* 프로필 이미지 */}
+                            <div className="w-10 h-10 border-2 border-natural-900 dark:border-dark-border bg-natural-100 dark:bg-dark-bg flex items-center justify-center overflow-hidden">
+                                {user?.profile_image_url ? (
+                                    <img
+                                        src={user.profile_image_url}
+                                        alt="Profile"
+                                        className="w-full h-full object-cover"
+                                        style={{
+                                            imageRendering: '-webkit-optimize-contrast',
+                                            backfaceVisibility: 'hidden',
+                                            transform: 'translateZ(0)',
+                                        }}
+                                    />
+                                ) : (
+                                    <div className="text-natural-400 dark:text-dark-text/30 text-xl">
+                                        👤
+                                    </div>
+                                )}
+                            </div>
+                            <span className="text-sm text-natural-900 dark:text-dark-text underline group-hover:no-underline">
+                                {user?.username || user?.email}님
+                            </span>
+                        </Link>
                         <Button
                             onClick={logout}
                             variant="outline"
