@@ -174,6 +174,14 @@ export const api = {
         return request('/api/v1/me');
     },
 
+    // 프로필 업데이트
+    updateMe: async (profile: { username: string; birth?: string; gender?: 'male' | 'female' | 'other' }) => {
+        return request('/api/v1/me', {
+            method: 'PUT',
+            body: JSON.stringify(profile),
+        });
+    },
+
     // 채팅 세션 관련 API
     chat: {
         // 현재 채팅 세션 가져오기

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/Button';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
@@ -151,10 +151,13 @@ export function HomePage() {
                     <h1 className="text-3xl md:text-4xl font-serif font-bold text-natural-900 dark:text-dark-text tracking-tight">
                         Daily Log
                     </h1>
-                    <div className="flex items-center gap-6">
-                        <span className="text-sm text-natural-600 dark:text-dark-text/80">
-                            {user?.username}님
-                        </span>
+                    <div className="flex items-center gap-4">
+                        <Link
+                            to="/profile"
+                            className="text-sm text-natural-900 dark:text-dark-text hover:opacity-70 transition-opacity underline"
+                        >
+                            {user?.username || user?.email}님
+                        </Link>
                         <Button
                             onClick={logout}
                             variant="outline"

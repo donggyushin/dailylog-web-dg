@@ -5,10 +5,13 @@ import { api } from '../utils/api';
 interface User {
     id: string;
     email: string;
-    username: string;
-    birth: string;
-    gender: string;
+    username: string | null;
+    birth: string | null;
+    gender: 'male' | 'female' | 'other' | null;
     email_verified: boolean;
+    free_trial_count: number;
+    is_admin: boolean;
+    profile_image_url: string | null;
 }
 
 interface AuthResponse {
