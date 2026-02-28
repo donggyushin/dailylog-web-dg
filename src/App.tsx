@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { EmailVerificationPage } from './pages/EmailVerificationPage';
 import { HomePage } from './pages/HomePage';
 import { ChatPage } from './pages/ChatPage';
@@ -27,6 +28,14 @@ function App() {
           element={
             <GuestRoute>
               <SignupPage />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <GuestRoute>
+              <ForgotPasswordPage />
             </GuestRoute>
           }
         />
