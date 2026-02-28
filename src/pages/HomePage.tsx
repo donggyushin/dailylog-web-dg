@@ -78,7 +78,7 @@ function DiaryCardWithThumbnail({
     return (
         <div
             onClick={onClick}
-            className="relative border-2 border-natural-900 dark:border-dark-border min-h-[300px] cursor-pointer overflow-hidden group"
+            className="relative border-2 border-natural-900 dark:border-dark-border min-h-[300px] cursor-pointer overflow-hidden group -ml-[2px] -mt-[2px]"
         >
             {/* 썸네일 이미지 - 카드 전체를 채움 */}
             <img
@@ -199,12 +199,12 @@ export function HomePage() {
                         </p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 ml-[2px] mt-[2px]">
                         {/* 오늘 일기가 없으면 작성하기 카드 표시 */}
                         {!hasTodayDiary() && (
                             <button
                                 onClick={() => navigate('/chat')}
-                                className="bg-natural-900 dark:bg-dark-text hover:bg-natural-800 dark:hover:bg-natural-100 border-2 border-natural-900 dark:border-dark-border p-8 flex flex-col items-center justify-center min-h-[300px] transition-colors group"
+                                className="bg-natural-900 dark:bg-dark-text hover:bg-natural-800 dark:hover:bg-natural-100 border-2 border-natural-900 dark:border-dark-border p-8 flex flex-col items-center justify-center min-h-[300px] transition-colors group -ml-[2px] -mt-[2px]"
                             >
                                 <div className="text-6xl mb-4 text-white dark:text-dark-bg">+</div>
                                 <h3 className="text-2xl font-serif font-bold text-white dark:text-dark-bg mb-2">
@@ -229,7 +229,7 @@ export function HomePage() {
                                 <div
                                     key={diary.id}
                                     onClick={() => navigate(`/diary/${diary.id}`)}
-                                    className="bg-white dark:bg-dark-card border-2 border-natural-900 dark:border-dark-border p-6 flex flex-col min-h-[300px] cursor-pointer hover:bg-natural-50 dark:hover:bg-natural-900/20 transition-colors"
+                                    className="bg-white dark:bg-dark-card border-2 border-natural-900 dark:border-dark-border p-6 flex flex-col min-h-[300px] cursor-pointer hover:bg-natural-50 dark:hover:bg-natural-900/20 transition-colors -ml-[2px] -mt-[2px]"
                                 >
                                     {/* 날짜 */}
                                     <div className="text-right mb-4">
