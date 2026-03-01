@@ -20,6 +20,7 @@ export interface Diary {
     content: string;
     writed_at: string;
     thumbnail_url?: string;
+    user_wrote_this_diary_directly: boolean;
     created_at: string;
     updated_at: string;
 }

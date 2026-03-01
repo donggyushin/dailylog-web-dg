@@ -141,13 +141,15 @@ export function DiaryDetailPage() {
                         Daily Log
                     </button>
                     <div className="flex gap-4">
-                        <Button
-                            onClick={() => navigate(`/chat/history/${id}`)}
-                            variant="outline"
-                            size="sm"
-                        >
-                            대화 보기
-                        </Button>
+                        {!diary.user_wrote_this_diary_directly && (
+                            <Button
+                                onClick={() => navigate(`/chat/history/${id}`)}
+                                variant="outline"
+                                size="sm"
+                            >
+                                대화 보기
+                            </Button>
+                        )}
                         <Button
                             onClick={handleDelete}
                             disabled={isDeleting}
