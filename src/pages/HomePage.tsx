@@ -109,6 +109,7 @@ export function HomePage() {
     const navigate = useNavigate();
     const [diaries, setDiaries] = useState<Diary[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [showWriteModal, setShowWriteModal] = useState(false);
 
     // 오늘 날짜에 작성한 일기가 있는지 확인
     const hasTodayDiary = () => {
@@ -203,7 +204,7 @@ export function HomePage() {
                         {/* 오늘 일기가 없으면 작성하기 카드 표시 */}
                         {!hasTodayDiary() && (
                             <button
-                                onClick={() => navigate('/chat')}
+                                onClick={() => setShowWriteModal(true)}
                                 className="bg-natural-900 dark:bg-dark-text hover:bg-natural-800 dark:hover:bg-natural-100 border-2 border-natural-900 dark:border-dark-border p-8 flex flex-col items-center justify-center min-h-[300px] transition-colors group -ml-[2px] -mt-[2px]"
                             >
                                 <div className="text-6xl mb-4 text-white dark:text-dark-bg">+</div>
@@ -266,12 +267,74 @@ export function HomePage() {
                         <p className="text-natural-600 dark:text-dark-text/80 mb-6">
                             아직 작성된 일기가 없습니다.
                         </p>
-                        <Button onClick={() => navigate('/chat')}>
+                        <Button onClick={() => setShowWriteModal(true)}>
                             첫 일기 작성하기
                         </Button>
                     </div>
                 )}
             </main>
+
+            {/* 작성 방법 선택 모달 */}
+            {showWriteModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-dark-card border-2 border-natural-900 dark:border-dark-border max-w-2xl w-full">
+                        {/* 모달 헤더 */}
+                        <div className="border-b-2 border-natural-900 dark:border-dark-border p-6">
+                            <h2 className="text-2xl font-serif font-bold text-natural-900 dark:text-dark-text uppercase tracking-tight">
+                                일기 작성 방법 선택
+                            </h2>
+                        </div>
+
+                        {/* 모달 콘텐츠 */}
+                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* AI와 대화하기 옵션 */}
+                            <button
+                                onClick={() => {
+                                    setShowWriteModal(false);
+                                    navigate('/chat');
+                                }}
+                                className="border-2 border-natural-900 dark:border-dark-border p-8 hover:bg-natural-50 dark:hover:bg-natural-900/20 transition-colors group"
+                            >
+                                <div className="text-5xl mb-4">💬</div>
+                                <h3 className="text-xl font-serif font-bold text-natural-900 dark:text-dark-text mb-3">
+                                    AI와 대화하기
+                                </h3>
+                                <p className="text-sm text-natural-600 dark:text-dark-text/80 leading-relaxed">
+                                    AI와 대화하며 하루를 돌아보고, 자동으로 감성적인 일기를 작성합니다.
+                                </p>
+                            </button>
+
+                            {/* 직접 작성하기 옵션 */}
+                            <button
+                                onClick={() => {
+                                    setShowWriteModal(false);
+                                    navigate('/diary/new');
+                                }}
+                                className="border-2 border-natural-900 dark:border-dark-border p-8 hover:bg-natural-50 dark:hover:bg-natural-900/20 transition-colors group"
+                            >
+                                <div className="text-5xl mb-4">✍️</div>
+                                <h3 className="text-xl font-serif font-bold text-natural-900 dark:text-dark-text mb-3">
+                                    직접 작성하기
+                                </h3>
+                                <p className="text-sm text-natural-600 dark:text-dark-text/80 leading-relaxed">
+                                    나만의 생각과 감정을 자유롭게 표현하며 일기를 작성합니다.
+                                </p>
+                            </button>
+                        </div>
+
+                        {/* 모달 푸터 */}
+                        <div className="border-t-2 border-natural-900 dark:border-dark-border p-6">
+                            <Button
+                                onClick={() => setShowWriteModal(false)}
+                                variant="outline"
+                                className="w-full"
+                            >
+                                취소
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

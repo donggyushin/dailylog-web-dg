@@ -141,12 +141,21 @@ export function DiaryDetailPage() {
                         Daily Log
                     </button>
                     <div className="flex gap-4">
+                        {!diary.user_wrote_this_diary_directly && (
+                            <Button
+                                onClick={() => navigate(`/chat/history/${id}`)}
+                                variant="outline"
+                                size="sm"
+                            >
+                                대화 보기
+                            </Button>
+                        )}
                         <Button
-                            onClick={() => navigate(`/chat/history/${id}`)}
+                            onClick={() => navigate(`/diary/${id}/edit`)}
                             variant="outline"
                             size="sm"
                         >
-                            대화 보기
+                            수정
                         </Button>
                         <Button
                             onClick={handleDelete}
@@ -270,11 +279,10 @@ export function DiaryDetailPage() {
                                                 <button
                                                     key={index}
                                                     onClick={() => setSelectedThumbnailIndex(index)}
-                                                    className={`border-2 ${
-                                                        selectedThumbnailIndex === index
+                                                    className={`border-2 ${selectedThumbnailIndex === index
                                                             ? 'border-natural-900 dark:border-dark-text'
                                                             : 'border-natural-400 dark:border-natural-600'
-                                                    } hover:border-natural-900 dark:hover:border-dark-text transition-colors`}
+                                                        } hover:border-natural-900 dark:hover:border-dark-text transition-colors`}
                                                 >
                                                     <img
                                                         src={thumbnail}
