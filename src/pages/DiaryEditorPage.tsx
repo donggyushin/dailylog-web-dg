@@ -43,6 +43,11 @@ export function DiaryEditorPage() {
             return;
         }
 
+        if (content.trim().length < 30) {
+            alert('일기 내용은 최소 30자 이상 입력해주세요.');
+            return;
+        }
+
         setIsSaving(true);
         setError(null);
 
@@ -119,7 +124,7 @@ export function DiaryEditorPage() {
                         {/* 내용 입력 */}
                         <div>
                             <label className="block text-sm font-bold uppercase tracking-wider text-natural-900 dark:text-dark-text mb-2">
-                                내용 *
+                                내용 * (최소 30자)
                             </label>
                             <textarea
                                 value={content}
@@ -128,13 +133,20 @@ export function DiaryEditorPage() {
                                 className="w-full min-h-[400px] px-4 py-3 border-2 border-natural-900 dark:border-dark-border bg-white dark:bg-dark-bg text-natural-900 dark:text-dark-text placeholder-natural-400 dark:placeholder-natural-600 focus:outline-none focus:ring-0 resize-y"
                                 required
                             />
+                            <p className={`mt-2 text-sm ${
+                                content.trim().length < 30
+                                    ? 'text-red-600 dark:text-red-500 font-bold'
+                                    : 'text-natural-600 dark:text-natural-400'
+                            }`}>
+                                {content.trim().length} / 30자
+                            </p>
                         </div>
 
                         {/* 버튼 그룹 */}
                         <div className="flex gap-4 pt-4">
                             <Button
                                 onClick={handleSave}
-                                disabled={isSaving || !content.trim()}
+                                disabled={isSaving || !content.trim() || content.trim().length < 30}
                                 className="flex-1"
                             >
                                 {isSaving ? '저장 중...' : isEditMode ? '수정하기' : '작성하기'}
