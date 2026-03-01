@@ -277,13 +277,35 @@ export const api = {
 
     // 일기 작성 API
     diary: {
-        // 일기 작성
+        // 일기 작성 (AI 대화 기반)
         create: async (sessionId: string, messageId: string) => {
             return request('/api/v1/diary', {
                 method: 'POST',
                 body: JSON.stringify({
                     session_id: sessionId,
                     message_id: messageId,
+                }),
+            });
+        },
+
+        // 일기 직접 작성
+        createDirect: async (title: string | undefined, content: string) => {
+            return request<Diary>('/api/v1/diary/direct', {
+                method: 'POST',
+                body: JSON.stringify({
+                    ...(title && { title }),
+                    content,
+                }),
+            });
+        },
+
+        // 일기 수정
+        update: async (diaryId: string, title: string | undefined, content: string) => {
+            return request<Diary>(`/api/v1/diary/${diaryId}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    ...(title && { title }),
+                    content,
                 }),
             });
         },

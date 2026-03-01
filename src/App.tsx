@@ -7,6 +7,7 @@ import { HomePage } from './pages/HomePage';
 import { ChatPage } from './pages/ChatPage';
 import { ChatHistoryPage } from './pages/ChatHistoryPage';
 import { DiaryDetailPage } from './pages/DiaryDetailPage';
+import { DiaryEditorPage } from './pages/DiaryEditorPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { GuestRoute } from './components/GuestRoute';
@@ -68,6 +69,22 @@ function App() {
           element={
             <ProtectedRoute>
               <ChatHistoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/diary/new"
+          element={
+            <ProtectedRoute>
+              <DiaryEditorPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/diary/:id/edit"
+          element={
+            <ProtectedRoute>
+              <DiaryEditorPage />
             </ProtectedRoute>
           }
         />

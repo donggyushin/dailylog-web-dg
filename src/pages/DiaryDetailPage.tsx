@@ -151,6 +151,13 @@ export function DiaryDetailPage() {
                             </Button>
                         )}
                         <Button
+                            onClick={() => navigate(`/diary/${id}/edit`)}
+                            variant="outline"
+                            size="sm"
+                        >
+                            수정
+                        </Button>
+                        <Button
                             onClick={handleDelete}
                             disabled={isDeleting}
                             variant="outline"
@@ -272,11 +279,10 @@ export function DiaryDetailPage() {
                                                 <button
                                                     key={index}
                                                     onClick={() => setSelectedThumbnailIndex(index)}
-                                                    className={`border-2 ${
-                                                        selectedThumbnailIndex === index
+                                                    className={`border-2 ${selectedThumbnailIndex === index
                                                             ? 'border-natural-900 dark:border-dark-text'
                                                             : 'border-natural-400 dark:border-natural-600'
-                                                    } hover:border-natural-900 dark:hover:border-dark-text transition-colors`}
+                                                        } hover:border-natural-900 dark:hover:border-dark-text transition-colors`}
                                                 >
                                                     <img
                                                         src={thumbnail}
