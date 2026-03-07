@@ -34,6 +34,14 @@ export function DiaryDetailPage() {
                 setError(error);
             } else if (data) {
                 setDiary(data);
+
+                // emotion이 null이면 자동으로 업데이트 요청
+                if (!data.emotion) {
+                    const { data: updatedDiary } = await api.diary.updateEmotion(id);
+                    if (updatedDiary) {
+                        setDiary(updatedDiary);
+                    }
+                }
             }
 
             // 이전/다음 일기 로드
@@ -222,6 +230,7 @@ export function DiaryDetailPage() {
                             content={diary.content}
                             createdAt={diary.writed_at}
                             thumbnailUrl={diary.thumbnail_url}
+                            emotion={diary.emotion}
                             showSaveButton={false}
                         />
                     </div>

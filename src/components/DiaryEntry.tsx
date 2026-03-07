@@ -9,6 +9,7 @@ interface DiaryEntryProps {
   isSaving?: boolean;
   showSaveButton?: boolean;
   thumbnailUrl?: string;
+  emotion?: string;
 }
 
 export function DiaryEntry({
@@ -19,7 +20,8 @@ export function DiaryEntry({
   onSaveDiary,
   isSaving = false,
   showSaveButton = true,
-  thumbnailUrl
+  thumbnailUrl,
+  emotion
 }: DiaryEntryProps) {
   // 날짜 포맷팅
   const formatDate = (dateString: string) => {
@@ -30,11 +32,32 @@ export function DiaryEntry({
     return `${year}.${month}.${day}`;
   };
 
+  // 감정에 따른 이모지 매핑
+  const getEmotionEmoji = (emotionValue?: string) => {
+    if (!emotionValue) return null;
+
+    const emotionMap: Record<string, string> = {
+      happy: '😊',
+      sad: '😢',
+      angry: '😠',
+      anxious: '😰',
+      peaceful: '😌',
+      normal: '😐'
+    };
+
+    return emotionMap[emotionValue] || null;
+  };
+
   return (
     <div className="w-full max-w-3xl mx-auto">
       <div className="border-2 border-natural-900 dark:border-dark-border bg-natural-50 dark:bg-dark-card p-8 md:p-12">
-        {/* 날짜 */}
-        <div className="text-right mb-6">
+        {/* 날짜 + Emotion */}
+        <div className="flex items-center justify-end gap-2 mb-6">
+          {getEmotionEmoji(emotion) && (
+            <span className="text-lg" role="img" aria-label={emotion}>
+              {getEmotionEmoji(emotion)}
+            </span>
+          )}
           <span className="text-sm font-bold uppercase tracking-wider text-natural-600 dark:text-natural-400">
             {formatDate(createdAt)}
           </span>

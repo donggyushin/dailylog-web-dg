@@ -20,6 +20,7 @@ export interface Diary {
     content: string;
     writed_at: string;
     thumbnail_url?: string;
+    emotion?: string;
     user_wrote_this_diary_directly: boolean;
     created_at: string;
     updated_at: string;
@@ -360,6 +361,13 @@ export const api = {
         // 이전/다음 일기 조회
         getNextPrev: async (diaryId: string) => {
             return request<{ next: Diary | null; prev: Diary | null }>(`/api/v1/diary/${diaryId}/next_prev`);
+        },
+
+        // 일기 감정 업데이트
+        updateEmotion: async (diaryId: string) => {
+            return request<Diary>(`/api/v1/diary/${diaryId}/emotion`, {
+                method: 'PATCH',
+            });
         },
     },
 };
