@@ -26,6 +26,29 @@ export interface Diary {
     updated_at: string;
 }
 
+export interface EmotionTimelineItem {
+    diary_date: string;
+    emotion: 'happy' | 'sad' | 'angry' | 'anxious' | 'peaceful' | 'normal';
+    emotion_score: number;
+    diary_id: string;
+    title: string | null;
+}
+
+export interface EmotionSummary {
+    total_count: number;
+    date_range: {
+        start?: string;
+        end?: string;
+    };
+    emotion_counts: Record<string, number>;
+    most_common_emotion: string | null;
+}
+
+export interface EmotionTimelineResponse {
+    timeline: EmotionTimelineItem[];
+    summary: EmotionSummary;
+}
+
 // 토큰 갱신 중인지 추적 (중복 요청 방지)
 let isRefreshing = false;
 let refreshPromise: Promise<boolean> | null = null;
@@ -368,6 +391,23 @@ export const api = {
             return request<Diary>(`/api/v1/diary/${diaryId}/emotion`, {
                 method: 'PATCH',
             });
+        },
+    },
+
+    // 통계 관련 API
+    statistics: {
+        // 감정 타임라인 조회
+        getEmotionTimeline: async (startDate?: string, endDate?: string) => {
+            const params = new URLSearchParams();
+            if (startDate) {
+                params.append('start_date', startDate);
+            }
+            if (endDate) {
+                params.append('end_date', endDate);
+            }
+
+            const queryString = params.toString();
+            return request<EmotionTimelineResponse>(`/api/v1/diaries/emotions/timeline${queryString ? `?${queryString}` : ''}`);
         },
     },
 };

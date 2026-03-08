@@ -154,6 +154,12 @@ export function HomePage() {
                     </h1>
                     <div className="flex items-center gap-4">
                         <Link
+                            to="/statistics"
+                            className="text-sm text-natural-900 dark:text-dark-text underline hover:no-underline font-bold uppercase tracking-wider"
+                        >
+                            통계
+                        </Link>
+                        <Link
                             to="/profile"
                             className="flex items-center gap-3 hover:opacity-70 transition-opacity group"
                         >

@@ -9,6 +9,7 @@ import { ChatHistoryPage } from './pages/ChatHistoryPage';
 import { DiaryDetailPage } from './pages/DiaryDetailPage';
 import { DiaryEditorPage } from './pages/DiaryEditorPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { StatisticsPage } from './pages/StatisticsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { GuestRoute } from './components/GuestRoute';
 
@@ -101,6 +102,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/statistics"
+          element={
+            <ProtectedRoute>
+              <StatisticsPage />
             </ProtectedRoute>
           }
         />
