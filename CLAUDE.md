@@ -88,11 +88,15 @@ src/
 ├── pages/            # Page components
 │   ├── LoginPage.tsx              # Login page
 │   ├── SignupPage.tsx             # Signup page
+│   ├── ForgotPasswordPage.tsx     # Password recovery (3-step flow)
 │   ├── EmailVerificationPage.tsx  # Email verification with 5-minute timer
-│   ├── HomePage.tsx               # Main dashboard (authenticated)
+│   ├── HomePage.tsx               # Main dashboard (diary grid with infinite scroll)
 │   ├── ChatPage.tsx               # AI chat conversation page
 │   ├── ChatHistoryPage.tsx        # Read-only chat history viewer
-│   ├── DiaryDetailPage.tsx        # Diary detail and thumbnail management
+│   ├── DiaryDetailPage.tsx        # Diary detail, bookmark, thumbnails, navigation
+│   ├── DiaryEditorPage.tsx        # Create/edit diary manually
+│   ├── ProfilePage.tsx            # User profile management
+│   ├── StatisticsPage.tsx         # Emotion timeline with recharts
 │   ├── AuthPages.css              # Login/Signup styles
 │   └── HomePage.css               # Home page styles
 ├── utils/            # Utility functions
@@ -128,9 +132,41 @@ After signup, users must verify their email:
 6. **Auto-navigation**: Upon successful verification, user is redirected to home page
 7. **User model**: `User.email_verified` boolean tracks verification status
 
+### Password Recovery Flow
+
+Users can reset their password via a 3-step process (`ForgotPasswordPage.tsx`):
+
+1. **Step 1 - Email Entry**:
+   - User enters their email address
+   - Calls `api.forgotPassword.requestCode(email)`
+   - Verification code sent to email
+   - 5-minute countdown timer starts
+
+2. **Step 2 - Code Verification**:
+   - User enters 6-digit verification code
+   - Calls `api.forgotPassword.verifyCode(email, code)`
+   - Returns a reset token on success
+   - Token stored in component state for next step
+
+3. **Step 3 - New Password**:
+   - User enters new password (minimum 8 characters)
+   - Password confirmation field must match
+   - Calls `api.forgotPassword.changePassword(token, newPassword)`
+   - Redirects to login page on success
+
+**Features**:
+- "다시 전송" button to resend code (resets timer)
+- "이전" button to go back to previous step
+- All state managed within ForgotPasswordPage component
+- Similar UI/UX pattern to EmailVerificationPage
+
 ### Diary Creation Workflow
 
-The app follows a 3-step process for creating diary entries:
+Users can create diaries in two ways:
+
+#### Method 1: AI-Generated Diary (via Chat)
+
+The app follows a 3-step process for AI-assisted diary creation:
 
 1. **Chat Conversation** (`/chat`):
    - User has a conversation with AI assistant about their day
@@ -157,24 +193,88 @@ The app follows a 3-step process for creating diary entries:
    - Calls `POST /api/v1/diary` with `session_id` and `message_id`
    - Automatically navigates to home page after successful save
 
+#### Method 2: Direct Manual Writing
+
+Users can write diaries directly without AI assistance:
+
+1. **Create New Diary** (`/diary/new`):
+   - Users navigate to the editor page
+   - Optional title field (can be left empty)
+   - Content textarea with validation (minimum 30 characters)
+   - "일기 저장하기" button saves via `api.diary.createDirect(title, content)`
+
+2. **Edit Existing Diary** (`/diary/:id/edit`):
+   - DiaryEditorPage loads existing diary data
+   - Both AI-generated and manually-written diaries can be edited
+   - "일기 수정하기" button updates via `api.diary.update(diaryId, title, content)`
+   - Validation: content must be at least 30 characters
+
+3. **Diary Field Tracking**:
+   - `user_wrote_this_diary_directly` boolean field distinguishes manual vs AI diaries
+   - Manual diaries don't show "대화 보기" button in detail page
+
 ### API Organization (`src/utils/api.ts`)
 
 The API layer is organized into namespaces:
 
-- `api.login()`, `api.signup()`, `api.me()` - Authentication endpoints
+**Authentication & User:**
+- `api.login(email, password)` - Login endpoint
+- `api.signup(email, password)` - Register new user
+- `api.me()` - Get current user info
+- `api.updateMe(profile)` - Update user profile (username, birth, gender)
+- `api.uploadProfileImage(file)` - Upload profile image (FormData)
+- `api.deleteProfileImage()` - Delete profile image
 - `api.requestEmailVerification()` - Request email verification code
 - `api.verifyEmail(code)` - Verify email with 6-digit code
+
+**Password Recovery:**
+- `api.forgotPassword.requestCode(email)` - Request password reset code
+- `api.forgotPassword.verifyCode(email, code)` - Verify code and get reset token
+- `api.forgotPassword.changePassword(token, newPassword)` - Change password with token
+
+**Chat:**
 - `api.chat.getCurrentSession()` - Get current chat session
-- `api.chat.sendMessage()` - Send chat message (requires session_id, user_id, content)
+- `api.chat.sendMessage(sessionId, userId, content)` - Send chat message
 - `api.chat.endCurrentSession()` - End current chat session
-- `api.diary.create()` - Create diary from chat message (requires session_id, message_id)
-- `api.diary.list()` - Get diary list with optional cursor pagination
-- `api.diary.getById()` - Get single diary by ID
+
+**Diary:**
+- `api.diary.create(sessionId, messageId)` - Create diary from chat message
+- `api.diary.createDirect(title, content)` - Create diary directly (manual writing)
+- `api.diary.update(diaryId, title, content)` - Update existing diary
+- `api.diary.list(cursorId?, size?)` - Get diary list with cursor pagination
+- `api.diary.getById(diaryId)` - Get single diary by ID
 - `api.diary.getByDate(date)` - Get diary by specific date (YYYY-MM-DD)
 - `api.diary.getChatSession(diaryId)` - Get chat session associated with a diary
-- `api.diary.getThumbnail()` - Generate AI thumbnail for diary (can be called up to 3 times)
-- `api.diary.updateThumbnail()` - Apply selected thumbnail to diary
-- `api.diary.delete()` - Delete diary entry
+- `api.diary.getThumbnail(diaryId)` - Generate AI thumbnail (max 3 times)
+- `api.diary.updateThumbnail(diaryId, imgUrl)` - Apply selected thumbnail
+- `api.diary.delete(diaryId)` - Delete diary entry
+- `api.diary.getNextPrev(diaryId)` - Get next/previous diary navigation
+- `api.diary.updateEmotion(diaryId)` - Trigger AI emotion analysis
+- `api.diary.addSaved(diaryId)` - Bookmark/save diary (POST)
+- `api.diary.removeSaved(diaryId)` - Remove bookmark (DELETE)
+
+**Statistics:**
+- `api.statistics.getEmotionTimeline(startDate?, endDate?)` - Get emotion timeline data for charts
+
+### Diary Data Model
+
+```typescript
+interface Diary {
+    id: string;
+    user_id: string;
+    chat_session_id: string;
+    title: string;
+    content: string;
+    writed_at: string; // YYYY-MM-DD
+    thumbnail_url?: string;
+    emotion?: 'happy' | 'sad' | 'angry' | 'anxious' | 'peaceful' | 'normal';
+    user_wrote_this_diary_directly: boolean;
+    created_at: string;
+    updated_at: string;
+    saved: boolean; // Bookmark status
+    tags: string[]; // Array of tag strings
+}
+```
 
 ### Thumbnail Generation Workflow
 
@@ -203,16 +303,29 @@ The home page (`HomePage.tsx`) displays diaries in a grid with different card st
   - Date only (no title or content preview)
   - Image brightness detection determines text color for readability
   - Hover effect scales the image slightly (`group-hover:scale-105`)
+  - Emotion icon displayed in top-right corner
 
 - **Diaries without thumbnails**:
   - White card with border
   - Shows date, title, and content preview
   - "더 읽기 →" footer with separator line
+  - Emotion icon displayed in top-right corner
 
 - **Create diary card**:
   - Only shown if no diary exists for today's date
   - Black background with "+" icon
   - Navigates to `/chat` to start conversation
+
+- **Infinite scrolling**:
+  - Loads 30 diaries at a time via cursor-based pagination
+  - Uses IntersectionObserver to detect when user reaches bottom
+  - Automatically fetches next batch using `cursor_id` from last diary
+  - Loading indicator shown while fetching more diaries
+
+- **Emotion indicators**:
+  - Each diary card shows emotion icon if `emotion` field exists
+  - Icons match the emotion color scheme (happy=gold, sad=blue, etc.)
+  - Icons positioned in absolute top-right corner of each card
 
 ## TypeScript Configuration
 
@@ -344,6 +457,13 @@ The diary detail page (`DiaryDetailPage.tsx`) uses a responsive layout:
   - Thumbnail section below (if visible)
   - Separated by top border on thumbnail section
 
+- **Bookmark Feature**:
+  - Bookmark icon appears next to "Daily Log" logo in header
+  - Inactive state: outlined bookmark (stroke only)
+  - Active state: filled red bookmark (#DC2626)
+  - Clicking toggles saved state via `api.diary.addSaved()` / `api.diary.removeSaved()`
+  - Brutalist design with sharp edges matching overall aesthetic
+
 - **Thumbnail UI**:
   - "썸네일 추가하기" button generates new thumbnails (max 3)
   - Counter shows "X / 3개 생성됨"
@@ -352,9 +472,15 @@ The diary detail page (`DiaryDetailPage.tsx`) uses a responsive layout:
   - Apply button persists the selected thumbnail to the diary
 
 - **Navigation**:
-  - "대화 보기" button navigates to `/chat/history/:id` to view the original conversation
-  - "삭제" button deletes the diary with confirmation
+  - Previous/Next diary buttons on left/right edges (fixed positioning)
+  - "대화 보기" button navigates to `/chat/history/:id` (only for AI-generated diaries)
+  - "수정" button navigates to `/diary/:id/edit`
+  - "삭제" button deletes the diary with confirmation (red styling)
   - "← 목록으로" returns to home page
+
+- **Emotion Display**:
+  - If `emotion` is null when diary loads, automatically calls `api.diary.updateEmotion()`
+  - Emotion icons displayed in `DiaryEntry` component
 
 ### Chat History Page
 
@@ -369,15 +495,61 @@ Read-only page for viewing past conversations (`ChatHistoryPage.tsx`):
   - "Daily Log" header links back to home page
 - **Error handling**: Redirects to home if session fails to load
 
+### Statistics Page (Emotion Timeline)
+
+Emotion visualization page (`StatisticsPage.tsx`):
+
+- **Route**: `/statistics`
+- **Data source**: `api.statistics.getEmotionTimeline(startDate?, endDate?)`
+- **Chart library**: recharts (LineChart component)
+- **Infinite scrolling**: Loads 60 days at a time, scrolls horizontally
+- **Emotion mapping**:
+  - `happy` → 행복 (Gold: #FFD700)
+  - `sad` → 슬픔 (Steel Blue: #4682B4)
+  - `angry` → 분노 (Crimson: #DC143C)
+  - `anxious` → 불안 (Medium Purple: #9370DB)
+  - `peaceful` → 평온 (Pale Green: #98FB98)
+  - `normal` → 평범 (Light Gray: #D3D3D3)
+- **Features**:
+  - Horizontal scroll container for timeline navigation
+  - Summary panel shows emotion counts and most common emotion
+  - Clicking data points navigates to corresponding diary
+  - Automatic loading of more data when scrolling to edges
+
+### Profile Page
+
+User profile management (`ProfilePage.tsx`):
+
+- **Route**: `/profile`
+- **Editable fields**:
+  - Username (text input)
+  - Birth date (date input in YYYY-MM-DD format)
+  - Gender (radio buttons: male, female, other)
+  - Profile image (file upload with preview, max 5MB)
+- **Image upload**:
+  - Drag-and-drop or click to select
+  - Client-side preview before upload
+  - Calls `api.uploadProfileImage(file)` with FormData
+  - Delete button calls `api.deleteProfileImage()`
+- **Profile update**: `api.updateMe({ username, birth, gender })`
+
 ## Application Routes
 
-- `/login` - Guest only (redirects to `/` if authenticated)
-- `/signup` - Guest only (redirects to `/` if authenticated)
-- `/verify-email` - Protected route for email verification
-- `/` - Home page (protected, shows diary list)
-- `/chat` - Active chat conversation (protected, one diary per day limit)
-- `/chat/history/:id` - Read-only chat history viewer (protected)
-- `/diary/:id` - Diary detail page with thumbnail management (protected)
+**Guest-only routes** (redirect to `/` if authenticated):
+- `/login` - Login page
+- `/signup` - Signup page
+- `/forgot-password` - Password recovery flow (3 steps: email → code → new password)
+
+**Protected routes** (require authentication):
+- `/` - Home page (diary list grid)
+- `/verify-email` - Email verification page (5-minute timer)
+- `/chat` - Active AI chat conversation (one diary per day limit)
+- `/chat/history/:id` - Read-only chat history viewer
+- `/diary/new` - Create new diary manually (direct writing)
+- `/diary/:id` - Diary detail page with bookmark, thumbnails, navigation
+- `/diary/:id/edit` - Edit existing diary
+- `/profile` - User profile management (username, birth, gender, profile image)
+- `/statistics` - Emotion timeline visualization (recharts line graph, infinite scroll)
 
 ## Development Notes
 

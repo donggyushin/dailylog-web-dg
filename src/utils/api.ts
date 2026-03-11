@@ -24,6 +24,8 @@ export interface Diary {
     user_wrote_this_diary_directly: boolean;
     created_at: string;
     updated_at: string;
+    saved: boolean;
+    tags: string[];
 }
 
 export interface EmotionTimelineItem {
@@ -390,6 +392,20 @@ export const api = {
         updateEmotion: async (diaryId: string) => {
             return request<Diary>(`/api/v1/diary/${diaryId}/emotion`, {
                 method: 'PATCH',
+            });
+        },
+
+        // 일기 저장 추가
+        addSaved: async (diaryId: string) => {
+            return request<Diary>(`/api/v1/diary/${diaryId}/saved`, {
+                method: 'POST',
+            });
+        },
+
+        // 일기 저장 해제
+        removeSaved: async (diaryId: string) => {
+            return request<Diary>(`/api/v1/diary/${diaryId}/saved`, {
+                method: 'DELETE',
             });
         },
     },

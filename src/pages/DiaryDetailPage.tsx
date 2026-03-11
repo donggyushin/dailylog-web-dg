@@ -18,6 +18,7 @@ export function DiaryDetailPage() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [nextDiary, setNextDiary] = useState<Diary | null>(null);
     const [prevDiary, setPrevDiary] = useState<Diary | null>(null);
+    const [isUpdatingSaved, setIsUpdatingSaved] = useState(false);
 
     useEffect(() => {
         const loadDiary = async () => {
@@ -92,6 +93,23 @@ export function DiaryDetailPage() {
         setIsUpdatingThumbnail(false);
     };
 
+    const handleToggleSaved = async () => {
+        if (!id || !diary) return;
+
+        setIsUpdatingSaved(true);
+        const { data, error } = diary.saved
+            ? await api.diary.removeSaved(id)
+            : await api.diary.addSaved(id);
+
+        if (error) {
+            alert('북마크 변경에 실패했습니다: ' + error);
+        } else if (data) {
+            setDiary(data);
+        }
+
+        setIsUpdatingSaved(false);
+    };
+
     const handleDelete = async () => {
         if (!id) return;
 
@@ -142,12 +160,32 @@ export function DiaryDetailPage() {
             {/* 헤더 */}
             <header className="border-b-2 border-natural-900 dark:border-dark-border bg-white dark:bg-dark-card">
                 <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
-                    <button
-                        onClick={() => navigate('/')}
-                        className="text-2xl md:text-3xl font-serif font-bold text-natural-900 dark:text-dark-text tracking-tight hover:underline"
-                    >
-                        Daily Log
-                    </button>
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => navigate('/')}
+                            className="text-2xl md:text-3xl font-serif font-bold text-natural-900 dark:text-dark-text tracking-tight hover:underline"
+                        >
+                            Daily Log
+                        </button>
+                        <button
+                            onClick={handleToggleSaved}
+                            disabled={isUpdatingSaved}
+                            className="p-2 hover:opacity-70 transition-opacity disabled:opacity-50"
+                            aria-label={diary.saved ? '북마크 해제' : '북마크 추가'}
+                        >
+                            <svg
+                                className="w-6 h-6 md:w-7 md:h-7"
+                                viewBox="0 0 24 24"
+                                fill={diary.saved ? '#DC2626' : 'none'}
+                                stroke={diary.saved ? '#DC2626' : 'currentColor'}
+                                strokeWidth="2"
+                                strokeLinecap="square"
+                                strokeLinejoin="miter"
+                            >
+                                <path d="M5 3h14v18l-7-5-7 5V3z" />
+                            </svg>
+                        </button>
+                    </div>
                     <div className="flex gap-4">
                         {!diary.user_wrote_this_diary_directly && (
                             <Button
