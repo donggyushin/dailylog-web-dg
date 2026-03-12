@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../utils/api';
 import { Button } from '../components/ui/Button';
-import { DiaryEntry } from '../components/DiaryEntry';
+import { EditableDiaryEntry } from '../components/EditableDiaryEntry';
 
 interface Message {
   id: string;
@@ -22,6 +22,8 @@ interface Session {
   updated_at: string;
 }
 
+const MESSAGE_LIMIT = 50;
+
 export function ChatPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -35,6 +37,7 @@ export function ChatPage() {
   const [hasTodayDiary, setHasTodayDiary] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
   const [isMessageLimitReached, setIsMessageLimitReached] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isComposingRef = useRef(false);
@@ -128,8 +131,8 @@ export function ChatPage() {
         return;
       }
 
-      // 메시지가 50개를 넘으면
-      if (messages.length > 50) {
+      // 메시지가 MESSAGE_LIMIT를 넘으면
+      if (messages.length > MESSAGE_LIMIT) {
         setIsMessageLimitReached(true);
         hasAutoRequestedDiaryRef.current = true;
         setIsSending(true);
@@ -145,10 +148,13 @@ export function ChatPage() {
             const assistantMessage = data as Message;
             setMessages((prev) => [...prev, assistantMessage]);
           } else {
-            console.error('Failed to auto-request diary:', error);
+            setError('자동 일기 요청에 실패했습니다. 직접 "일기를 작성해줘"라고 입력해주세요.');
           }
-        } catch (error) {
-          console.error('Error auto-requesting diary:', error);
+        } catch (err) {
+          const errorMessage = err instanceof Error
+            ? err.message
+            : '자동 일기 요청 중 오류가 발생했습니다.';
+          setError(errorMessage);
         } finally {
           setIsSending(false);
         }
@@ -159,21 +165,25 @@ export function ChatPage() {
   }, [messages.length, user, session, isSending, isDiaryWritten]);
 
   // 일기 저장 핸들러
-  const handleSaveDiary = async (messageId: string) => {
-    if (!session) return;
-
+  const handleSaveDiary = async (title: string, content: string) => {
     setIsSavingDiary(true);
-    try {
-      const { data, error } = await api.diary.create(session.id, messageId);
+    setError(null);
 
-      if (data && !error) {
-        // 홈화면으로 이동
+    try {
+      const { data, error } = await api.diary.createDirect(title, content);
+
+      if (error) {
+        setError(error);
+        alert(`일기 저장에 실패했습니다: ${error}`);
+      } else if (data) {
         navigate('/');
-      } else {
-        console.error('Failed to save diary:', error);
       }
     } catch (error) {
-      console.error('Error saving diary:', error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : '알 수 없는 오류가 발생했습니다.';
+      setError(errorMessage);
+      alert(`일기 저장 중 오류가 발생했습니다: ${errorMessage}`);
     } finally {
       setIsSavingDiary(false);
     }
@@ -182,17 +192,21 @@ export function ChatPage() {
   // 세션 종료 핸들러
   const handleEndSession = async () => {
     setIsEndingSession(true);
+    setError(null);
+
     try {
       const { error } = await api.chat.endCurrentSession();
 
       if (!error) {
-        // 홈화면으로 이동
         navigate('/');
       } else {
-        console.error('Failed to end session:', error);
+        setError('세션 종료에 실패했습니다. 다시 시도해주세요.');
       }
-    } catch (error) {
-      console.error('Error ending session:', error);
+    } catch (err) {
+      const errorMessage = err instanceof Error
+        ? err.message
+        : '세션 종료 중 오류가 발생했습니다.';
+      setError(errorMessage);
     } finally {
       setIsEndingSession(false);
     }
@@ -266,11 +280,13 @@ export function ChatPage() {
         const assistantMessage = data as Message;
         setMessages((prev) => [...prev, assistantMessage]);
       } else {
-        // 에러 처리
-        console.error('Failed to send message:', error);
+        setError('메시지 전송에 실패했습니다. 다시 시도해주세요.');
       }
-    } catch (error) {
-      console.error('Error sending message:', error);
+    } catch (err) {
+      const errorMessage = err instanceof Error
+        ? err.message
+        : '메시지 전송 중 오류가 발생했습니다.';
+      setError(errorMessage);
     } finally {
       setIsSending(false);
     }
@@ -348,6 +364,18 @@ export function ChatPage() {
           </div>
         )}
 
+        {/* 에러 표시 */}
+        {error && (
+          <div className="border-2 border-red-600 dark:border-red-500 bg-red-50 dark:bg-red-900/20 p-4">
+            <div className="font-bold uppercase tracking-wider text-xs mb-2 text-red-600 dark:text-red-500">
+              오류
+            </div>
+            <div className="text-red-600 dark:text-red-500">
+              {error}
+            </div>
+          </div>
+        )}
+
         {messages.map((message) => {
           const diaryData = parseDiaryEntry(message.content);
 
@@ -355,12 +383,12 @@ export function ChatPage() {
           if (message.role === 'ASSISTANT' && diaryData.isDiary) {
             return (
               <div key={message.id} className="w-full">
-                <DiaryEntry
+                <EditableDiaryEntry
                   title={diaryData.title!}
                   content={diaryData.content!}
                   createdAt={message.created_at}
-                  messageId={message.id}
-                  onSaveDiary={handleSaveDiary}
+                  emotion={undefined}
+                  onSave={handleSaveDiary}
                   isSaving={isSavingDiary}
                 />
               </div>
