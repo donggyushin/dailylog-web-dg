@@ -11,6 +11,7 @@ import { DiaryEditorPage } from './pages/DiaryEditorPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { StatisticsPage } from './pages/StatisticsPage';
 import { SavedDiariesPage } from './pages/SavedDiariesPage';
+import { SearchPage } from './pages/SearchPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { GuestRoute } from './components/GuestRoute';
 
@@ -119,6 +120,14 @@ function App() {
           element={
             <ProtectedRoute>
               <SavedDiariesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/search"
+          element={
+            <ProtectedRoute>
+              <SearchPage />
             </ProtectedRoute>
           }
         />

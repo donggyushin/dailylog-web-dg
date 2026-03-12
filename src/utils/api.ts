@@ -420,6 +420,19 @@ export const api = {
             const queryString = params.toString();
             return request<Diary[]>(`/api/v1/diaries/saved${queryString ? `?${queryString}` : ''}`);
         },
+
+        // 일기 검색
+        searchDiaries: async (query: string, cursorId?: string, size: number = 30) => {
+            const params = new URLSearchParams();
+            params.append('query', query);
+            if (cursorId) {
+                params.append('cursor_id', cursorId);
+            }
+            params.append('size', size.toString());
+
+            const queryString = params.toString();
+            return request<Diary[]>(`/api/v1/diaries/search?${queryString}`);
+        },
     },
 
     // 통계 관련 API
