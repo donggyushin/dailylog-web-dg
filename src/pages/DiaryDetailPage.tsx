@@ -197,13 +197,6 @@ export function DiaryDetailPage() {
                             </Button>
                         )}
                         <Button
-                            onClick={() => navigate(`/diary/${id}/edit`)}
-                            variant="outline"
-                            size="sm"
-                        >
-                            수정
-                        </Button>
-                        <Button
                             onClick={handleDelete}
                             disabled={isDeleting}
                             variant="outline"
