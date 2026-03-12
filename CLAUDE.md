@@ -189,9 +189,10 @@ The app follows a 3-step process for AI-assisted diary creation:
    - Once diary is generated, chat input is disabled (session ends)
 
 3. **Diary Saving**:
-   - User clicks "이대로 일기 작성하기" button
-   - Calls `POST /api/v1/diary` with `session_id` and `message_id`
-   - Automatically navigates to home page after successful save
+   - User can edit the AI-generated diary title and content in `EditableDiaryEntry` component
+   - User clicks "일기 저장하기" button
+   - Calls `api.diary.createDirect(title, content, sessionId)` to save with chat session ID
+   - Automatically navigates to diary detail page (`/diary/:id`) after successful save
 
 #### Method 2: Direct Manual Writing
 
@@ -239,7 +240,7 @@ The API layer is organized into namespaces:
 
 **Diary:**
 - `api.diary.create(sessionId, messageId)` - Create diary from chat message
-- `api.diary.createDirect(title, content)` - Create diary directly (manual writing)
+- `api.diary.createDirect(title, content, chatSessionId?)` - Create diary directly (manual writing, with optional chat session ID)
 - `api.diary.update(diaryId, title, content)` - Update existing diary
 - `api.diary.list(cursorId?, size?)` - Get diary list with cursor pagination
 - `api.diary.getById(diaryId)` - Get single diary by ID
@@ -252,6 +253,8 @@ The API layer is organized into namespaces:
 - `api.diary.updateEmotion(diaryId)` - Trigger AI emotion analysis
 - `api.diary.addSaved(diaryId)` - Bookmark/save diary (POST)
 - `api.diary.removeSaved(diaryId)` - Remove bookmark (DELETE)
+- `api.diary.getSavedDiaries(cursorId?, size?)` - Get bookmarked diaries with cursor pagination
+- `api.diary.searchDiaries(query, cursorId?, size?)` - Search diaries by title or content
 
 **Statistics:**
 - `api.statistics.getEmotionTimeline(startDate?, endDate?)` - Get emotion timeline data for charts
@@ -533,6 +536,50 @@ User profile management (`ProfilePage.tsx`):
   - Delete button calls `api.deleteProfileImage()`
 - **Profile update**: `api.updateMe({ username, birth, gender })`
 
+### Saved Diaries Page (Bookmarks)
+
+Magazine-style page for bookmarked diaries (`SavedDiariesPage.tsx`):
+
+- **Route**: `/saved`
+- **Data source**: `api.diary.getSavedDiaries(cursorId?, size?)`
+- **Layout**: Magazine-style with large cards
+  - **Thumbnail diaries**: Zigzag layout (alternating left/right image placement)
+    - Even index: Image left, text right
+    - Odd index: Image right, text left
+    - 50/50 split on desktop, stacked on mobile
+  - **No thumbnail diaries**: Full-width cards with text content
+  - Brutalist shadow effect on hover: `shadow-[8px_8px_0px_0px]`
+- **Features**:
+  - Displays emotion emoji and Korean label
+  - Shows bookmark status (red filled icon)
+  - Click to remove bookmark (updates list in real-time)
+  - Infinite scroll (30 diaries per batch)
+  - Empty state with call-to-action
+
+### Search Page
+
+Timeline-style search page (`SearchPage.tsx`):
+
+- **Route**: `/search` (supports `?q=query` URL parameter)
+- **Data source**: `api.diary.searchDiaries(query, cursorId?, size?)`
+- **Layout**: Compact timeline/list style
+  - Horizontal cards: Thumbnail (192px fixed width) + text content
+  - Smaller, more compact than home page grid
+  - Stacks vertically for easy scanning
+- **Search features**:
+  - Large search input at top of page
+  - Enter key or search button to submit
+  - URL query parameter support (`?q=검색어`)
+  - **Keyword highlighting**: Search terms highlighted with black background in title and content
+  - Result count display ("X개의 일기를 찾았습니다")
+  - Empty state with search suggestions
+- **Card display**:
+  - Date and emotion indicator (colored square + Korean label)
+  - Highlighted title and content preview (2 lines)
+  - Bookmark status indicator for saved diaries
+  - Click to navigate to detail page
+  - Infinite scroll (30 results per batch)
+
 ## Application Routes
 
 **Guest-only routes** (redirect to `/` if authenticated):
@@ -541,15 +588,50 @@ User profile management (`ProfilePage.tsx`):
 - `/forgot-password` - Password recovery flow (3 steps: email → code → new password)
 
 **Protected routes** (require authentication):
-- `/` - Home page (diary list grid)
+- `/` - Home page (diary list grid with infinite scroll)
 - `/verify-email` - Email verification page (5-minute timer)
 - `/chat` - Active AI chat conversation (one diary per day limit)
 - `/chat/history/:id` - Read-only chat history viewer
 - `/diary/new` - Create new diary manually (direct writing)
 - `/diary/:id` - Diary detail page with bookmark, thumbnails, navigation
 - `/diary/:id/edit` - Edit existing diary
+- `/saved` - Bookmarked diaries page (magazine-style layout with infinite scroll)
+- `/search` - Search diaries page (timeline-style layout with keyword highlighting, supports `?q=query` parameter)
 - `/profile` - User profile management (username, birth, gender, profile image)
 - `/statistics` - Emotion timeline visualization (recharts line graph, infinite scroll)
+
+## Key Components
+
+### EditableDiaryEntry
+
+Editable diary display component used in ChatPage (`src/components/EditableDiaryEntry.tsx`):
+
+- Displays AI-generated diary in journal-style format
+- Allows editing of both title and content before saving
+- Provides "일기 저장하기" button with loading state
+- Used when AI generates diary in chat conversation
+
+### Layout Patterns
+
+Three distinct layout patterns are used across the app:
+
+1. **Grid Layout** (HomePage):
+   - 3-column responsive grid
+   - Mixed card styles (thumbnail vs text-only)
+   - Square-ish proportions
+   - Dense, gallery-like presentation
+
+2. **Magazine Layout** (SavedDiariesPage):
+   - Large, single-column cards
+   - Zigzag image placement (alternating sides)
+   - Spacious, editorial-style presentation
+   - Emphasis on visual content
+
+3. **Timeline Layout** (SearchPage):
+   - Compact horizontal cards
+   - Consistent left-aligned layout
+   - Easy scanning and reading
+   - Keyword highlighting for search results
 
 ## Development Notes
 
@@ -559,3 +641,4 @@ User profile management (`ProfilePage.tsx`):
 - JSX transformation uses the modern `react-jsx` runtime (no React import needed)
 - Backend API is implemented separately and should be running for full functionality
 - **One diary per day**: ChatPage checks for existing diary with `api.diary.getByDate(today)` before allowing new conversations
+- **Chat session tracking**: When saving AI-generated diaries, the `chat_session_id` is included in the request body to link diary with conversation
