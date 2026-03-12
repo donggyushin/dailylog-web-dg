@@ -170,13 +170,17 @@ export function ChatPage() {
     setError(null);
 
     try {
-      const { data, error } = await api.diary.createDirect(title, content);
+      const { data, error } = await api.diary.createDirect(
+        title,
+        content,
+        session?.id
+      );
 
       if (error) {
         setError(error);
         alert(`일기 저장에 실패했습니다: ${error}`);
       } else if (data) {
-        navigate('/');
+        navigate(`/diary/${data.id}`);
       }
     } catch (error) {
       const errorMessage = error instanceof Error

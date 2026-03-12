@@ -315,12 +315,13 @@ export const api = {
         },
 
         // 일기 직접 작성
-        createDirect: async (title: string | undefined, content: string) => {
+        createDirect: async (title: string | undefined, content: string, chatSessionId?: string) => {
             return request<Diary>('/api/v1/diary/direct', {
                 method: 'POST',
                 body: JSON.stringify({
                     ...(title && { title }),
                     content,
+                    ...(chatSessionId && { chat_session_id: chatSessionId }),
                 }),
             });
         },
