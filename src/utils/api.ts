@@ -7,6 +7,65 @@ interface ApiResponse<T = any> {
     error?: string;
 }
 
+interface ValidationError {
+    type: string;
+    loc: (string | number)[];
+    msg: string;
+    input?: any;
+    ctx?: Record<string, any>;
+}
+
+// Validation 에러를 한국어 메시지로 변환
+function formatValidationError(error: ValidationError): string {
+    const field = error.loc[error.loc.length - 1]; // 마지막 필드명
+
+    switch (error.type) {
+        case 'string_too_short':
+            const minLength = error.ctx?.min_length;
+            if (field === 'password') {
+                return `비밀번호는 최소 ${minLength}자 이상이어야 합니다`;
+            }
+            if (field === 'email') {
+                return `이메일은 최소 ${minLength}자 이상이어야 합니다`;
+            }
+            return `${field}는 최소 ${minLength}자 이상이어야 합니다`;
+
+        case 'string_too_long':
+            const maxLength = error.ctx?.max_length;
+            if (field === 'password') {
+                return `비밀번호는 최대 ${maxLength}자까지 입력 가능합니다`;
+            }
+            if (field === 'email') {
+                return `이메일은 최대 ${maxLength}자까지 입력 가능합니다`;
+            }
+            return `${field}는 최대 ${maxLength}자까지 입력 가능합니다`;
+
+        case 'value_error':
+            if (error.msg.toLowerCase().includes('email')) {
+                return '올바른 이메일 형식이 아닙니다';
+            }
+            return error.msg;
+
+        case 'missing':
+            if (field === 'password') {
+                return '비밀번호를 입력해주세요';
+            }
+            if (field === 'email') {
+                return '이메일을 입력해주세요';
+            }
+            return `${field}를 입력해주세요`;
+
+        case 'string_pattern_mismatch':
+            if (field === 'email') {
+                return '올바른 이메일 형식이 아닙니다';
+            }
+            return error.msg;
+
+        default:
+            return error.msg;
+    }
+}
+
 // API response types
 interface ThumbnailResponse {
     img_url: string;
@@ -155,6 +214,14 @@ async function request<T>(
         const data = await response.json();
 
         if (!response.ok) {
+            // 422 Validation Error 처리
+            if (response.status === 422 && data.detail && Array.isArray(data.detail)) {
+                const validationErrors = data.detail.map((err: ValidationError) =>
+                    formatValidationError(err)
+                );
+                return { error: validationErrors.join('\n') };
+            }
+
             return { error: data.message || 'An error occurred' };
         }
 

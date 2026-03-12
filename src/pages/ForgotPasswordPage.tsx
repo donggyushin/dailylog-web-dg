@@ -127,8 +127,8 @@ export function ForgotPasswordPage() {
             return;
         }
 
-        if (newPassword.length < 8) {
-            setError('비밀번호는 최소 8자 이상이어야 합니다.');
+        if (newPassword.length < 10) {
+            setError('비밀번호는 최소 10자 이상이어야 합니다.');
             return;
         }
 
@@ -304,7 +304,7 @@ export function ForgotPasswordPage() {
                                 type="password"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
-                                placeholder="최소 8자, 영문과 숫자 포함"
+                                placeholder="최소 10자, 영문과 숫자 포함"
                                 required
                                 disabled={isLoading}
                             />

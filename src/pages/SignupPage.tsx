@@ -26,8 +26,8 @@ export function SignupPage() {
         }
 
         // 비밀번호 최소 길이 확인
-        if (password.length < 6) {
-            setError('비밀번호는 최소 6자 이상이어야 합니다');
+        if (password.length < 10) {
+            setError('비밀번호는 최소 10자 이상이어야 합니다');
             return;
         }
 
@@ -79,7 +79,7 @@ export function SignupPage() {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="최소 6자 이상"
+                            placeholder="최소 10자 이상"
                             required
                             disabled={isLoading}
                         />
