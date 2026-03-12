@@ -408,6 +408,18 @@ export const api = {
                 method: 'DELETE',
             });
         },
+
+        // 저장된 일기 리스트 조회
+        getSavedDiaries: async (cursorId?: string, size: number = 30) => {
+            const params = new URLSearchParams();
+            if (cursorId) {
+                params.append('cursor_id', cursorId);
+            }
+            params.append('size', size.toString());
+
+            const queryString = params.toString();
+            return request<Diary[]>(`/api/v1/diaries/saved${queryString ? `?${queryString}` : ''}`);
+        },
     },
 
     // 통계 관련 API

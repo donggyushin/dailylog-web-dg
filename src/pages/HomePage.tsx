@@ -154,6 +154,12 @@ export function HomePage() {
                     </h1>
                     <div className="flex items-center gap-4">
                         <Link
+                            to="/saved"
+                            className="text-sm text-natural-900 dark:text-dark-text underline hover:no-underline font-bold uppercase tracking-wider"
+                        >
+                            북마크
+                        </Link>
+                        <Link
                             to="/statistics"
                             className="text-sm text-natural-900 dark:text-dark-text underline hover:no-underline font-bold uppercase tracking-wider"
                         >

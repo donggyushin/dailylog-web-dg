@@ -10,6 +10,7 @@ import { DiaryDetailPage } from './pages/DiaryDetailPage';
 import { DiaryEditorPage } from './pages/DiaryEditorPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { StatisticsPage } from './pages/StatisticsPage';
+import { SavedDiariesPage } from './pages/SavedDiariesPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { GuestRoute } from './components/GuestRoute';
 
@@ -110,6 +111,14 @@ function App() {
           element={
             <ProtectedRoute>
               <StatisticsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/saved"
+          element={
+            <ProtectedRoute>
+              <SavedDiariesPage />
             </ProtectedRoute>
           }
         />
